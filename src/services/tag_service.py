@@ -6,7 +6,7 @@ from ..models import Tag
 import grpc
 from src.proto import user_pb2, user_pb2_grpc
 
-user_channel = grpc.insecure_channel('127.0.0.1:50053')
+user_channel = grpc.insecure_channel('user_api:50053') # 127.0.0.1 / 0.0.0.0
 user_stub = user_pb2_grpc.gRPCUserServiceStub(user_channel)
 
 def get_user_by_email(email):

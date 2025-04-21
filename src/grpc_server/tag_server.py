@@ -23,7 +23,7 @@ class gRPCTagService(tag_pb2_grpc.gRPCTagServiceServicer):
 def run_grpc_server(app):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     tag_pb2_grpc.add_gRPCTagServiceServicer_to_server(gRPCTagService(app), server)
-    server.add_insecure_port('127.0.0.1:50054')  # Порт для gRPC сервера
+    server.add_insecure_port('0.0.0.0:50054')  # Порт для gRPC сервера
     print("Tag gRPC Server started on port 50054")
     server.start()
     server.wait_for_termination()
