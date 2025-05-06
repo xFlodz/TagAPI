@@ -6,7 +6,7 @@ from ..models import Tag
 import grpc
 from src.proto import user_pb2, user_pb2_grpc
 
-user_channel = grpc.insecure_channel('user_api:50053') # 127.0.0.1 / 0.0.0.0
+user_channel = grpc.insecure_channel('user-api:50053') # 127.0.0.1 / user-api
 user_stub = user_pb2_grpc.gRPCUserServiceStub(user_channel)
 
 def get_user_by_email(email):
@@ -60,7 +60,7 @@ def delete_tag_service(tag_id, current_user_email):
         tag = Tag.query.filter(Tag.id == tag_id, Tag.deleted_at.is_(None)).first()
 
         user_current = get_user_by_email(current_user_email)
-        if user_current.role != 'admin':
+        if user_current.get('role') != 'admin':
             return jsonify({'error': 'У вас недостаточно прав'}), 403
 
         if not tag:
