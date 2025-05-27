@@ -4,10 +4,13 @@ from ..db import db
 from ..models import Tag
 
 import grpc
-from src.proto import user_pb2, user_pb2_grpc
+from src.proto import user_pb2, user_pb2_grpc, post_pb2, post_pb2_grpc
 
 user_channel = grpc.insecure_channel('127.0.0.1:50053') # 127.0.0.1 / user-api
 user_stub = user_pb2_grpc.gRPCUserServiceStub(user_channel)
+
+post_channel = grpc.insecure_channel('127.0.0.1:50055') # 127.0.0.1 / post-api
+post_stub = post_pb2_grpc.gRPCPostServiceStub(post_channel)
 
 def get_user_by_email(email):
     try:
@@ -22,6 +25,18 @@ def get_user_by_email(email):
     except grpc.RpcError as e:
         print(f"Error fetching user by email: {e}")
         return None
+
+def delete_tag_in_all_posts(tag_id):
+    try:
+        print(tag_id)
+        request = post_pb2.RemoveTagRequest(tag_id=str(tag_id))
+        response = post_stub.RemoveTagFromPosts(request)
+        return 'Теги успешно удалены'
+    except grpc.RpcError as e:
+        print(f"Error deleting tag in all posts: {e}")
+        return {
+            'error': 'Ошибка при удалении тега во всех постах через post-api'
+        }
 
 def create_tag_service(data, current_user_email):
     try:
@@ -68,12 +83,14 @@ def delete_tag_service(tag_id, current_user_email):
 
         db.session.delete(tag)
         db.session.commit()
+        delete_tag_in_all_posts(tag.id)
 
         return jsonify({'message': 'Тег удален успешно'}), 200
 
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
 
 
 def get_all_tags_service():
